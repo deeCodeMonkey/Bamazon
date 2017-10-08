@@ -44,15 +44,16 @@ function buyItemNo() {
             message: "Please enter Item No. to purchase."
         })
         .then(function (answer) {
-            item = answer;
+            item = answer; 4
+
             console.log(answer.item);
-            //var q = 'SELECT item_id, product_name, price FROM products';
-            //connection.query(q, function (err, res) {
-            //    console.log(err);
-            //    console.log(res);
+            var q = 'SELECT item_id, product_name, price FROM products where item_id = ?';
+            connection.query(q, (answer.item),function (err, res) {
+                console.log(err);
+                console.log(`You chose ${res[0].product_name} for $${res[0].price} each.`);
               
                 buyQty();
-            //});
+            });
         });
 }
 
@@ -65,7 +66,7 @@ function buyQty() {
         })
         .then(function (answer) {
             qty = answer;
-            console.log(qty);
+            console.log(answer.qty);
             checkInv();
         });
 }
@@ -73,10 +74,10 @@ function buyQty() {
 function checkInv() {
     connection.query("SELECT stock_quantity FROM products WHERE item_id = 2", function (err, res) {
         console.log(res);
+        connection.end();
     });
 }
 
 
 
 
-connection.end();
