@@ -44,8 +44,7 @@ function buyItemNo() {
             message: "Please enter Item No. to purchase."
         })
         .then(function (answer) {
-            item = answer; 4
-
+            item = answer.item; 
             console.log(answer.item);
             var q = 'SELECT item_id, product_name, price FROM products where item_id = ?';
             connection.query(q, (answer.item),function (err, res) {
@@ -69,13 +68,19 @@ function buyQty() {
             console.log(answer.qty);
             checkInv();
         });
-}
+} 
 
+4
 function checkInv() {
-    connection.query("SELECT stock_quantity FROM products WHERE item_id = 2", function (err, res) {
-        console.log(res);
-        connection.end();
+    var q = 'SELECT stock_quantity FROM products where item_id = ?';
+    connection.query(q, item, function (err, res) {
+        console.log(err);
+        console.log(`Thre are ${res[0].stock_quantity} in stock.`);
     });
+    //connection.query("SELECT stock_quantity FROM products WHERE item_id = 2", function (err, res) {
+    //    console.log(res);
+    //    connection.end();
+    //});
 }
 
 
