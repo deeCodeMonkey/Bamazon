@@ -33,8 +33,11 @@ connection.query(q, function (err, res, fields) {
 });
 
 
-var item = 0;
-var qty = 0;
+var item;
+var qty;
+var product;
+var pricing;
+var inv;
 
 function buyItemNo() {
     inquirer
@@ -50,6 +53,9 @@ function buyItemNo() {
             connection.query(q, (answer.item),function (err, res) {
                 console.log(err);
                 console.log(`You chose ${res[0].product_name} for $${res[0].price} each.`);
+
+                product = res[0].product_name;
+                pricing = res[0].price
               
                 buyQty();
             });
@@ -64,25 +70,51 @@ function buyQty() {
             message: "Please enter quantity of item."
         })
         .then(function (answer) {
-            qty = answer;
+            qty = answer.qty;
             console.log(answer.qty);
             checkInv();
         });
 } 
 
-4
 function checkInv() {
     var q = 'SELECT stock_quantity FROM products where item_id = ?';
     connection.query(q, item, function (err, res) {
         console.log(err);
-        console.log(`Thre are ${res[0].stock_quantity} in stock.`);
+        console.log(`There are ${res[0].stock_quantity} in stock.`);
+      
+        if (res[0].stock_quantity >= qty) {
+            checkout();
+        } else {
+            console.log('Insufficient quantity! (Enter new qty.)');
+            buy4Qty();
+        }
+
     });
-    //connection.query("SELECT stock_quantity FROM products WHERE item_id = 2", function (err, res) {
-    //    console.log(res);
-    //    connection.end();
-    //});
 }
 
+function checkout() {
+    var q = 'UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?';
+    connection.query(q, [qty, item], function (err, res) {
+        console.log(err);
+        var total = pricing * qty;
+        console.log(`You had purchased QTY ${qty} of ${product} for $${total}.`);
+    });
 
+    var q = 'SELECT stock_quantity FROM products where item_id = ?';
+    connection.query(q, item, function (err, res) {
+        console.log(err);
+        console.log(`There are ${res[0].stock_quantity} of ${product} remaining in stock.`);
+
+    });
+}
+
+//function invCount() {
+//    var q = 'SELECT stock_quantity FROM products where item_id = ?';
+//    connection.query(q, item, function (err, res) {
+//        console.log(err);
+//        return inv = res[0].stock_quantity;
+//        console.log(inv);
+//    });
+//}
 
 
