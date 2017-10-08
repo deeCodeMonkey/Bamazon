@@ -48,10 +48,10 @@ function buyItemNo() {
         })
         .then(function (answer) {
             item = answer.item; 
-            console.log(answer.item);
+            //console.log(answer.item);
             var q = 'SELECT item_id, product_name, price FROM products where item_id = ?';
             connection.query(q, (answer.item),function (err, res) {
-                console.log(err);
+                //console.log(err);
                 console.log(`You chose ${res[0].product_name} for $${res[0].price} each.`);
 
                 product = res[0].product_name;
@@ -71,7 +71,7 @@ function buyQty() {
         })
         .then(function (answer) {
             qty = answer.qty;
-            console.log(answer.qty);
+            //console.log(answer.qty);
             checkInv();
         });
 } 
@@ -79,14 +79,14 @@ function buyQty() {
 function checkInv() {
     var q = 'SELECT stock_quantity FROM products where item_id = ?';
     connection.query(q, item, function (err, res) {
-        console.log(err);
+        //console.log(err);
         console.log(`There are ${res[0].stock_quantity} in stock.`);
       
         if (res[0].stock_quantity >= qty) {
             checkout();
         } else {
             console.log('Insufficient quantity! (Enter new qty.)');
-            buy4Qty();
+            buyQty();
         }
 
     });
@@ -95,17 +95,18 @@ function checkInv() {
 function checkout() {
     var q = 'UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?';
     connection.query(q, [qty, item], function (err, res) {
-        console.log(err);
+        //console.log(err);
         var total = pricing * qty;
         console.log(`You had purchased QTY ${qty} of ${product} for $${total}.`);
     });
 
     var q = 'SELECT stock_quantity FROM products where item_id = ?';
     connection.query(q, item, function (err, res) {
-        console.log(err);
+        //console.log(err);
         console.log(`There are ${res[0].stock_quantity} of ${product} remaining in stock.`);
 
     });
+    connection.end();
 }
 
 //function invCount() {
@@ -116,5 +117,4 @@ function checkout() {
 //        console.log(inv);
 //    });
 //}
-
 
