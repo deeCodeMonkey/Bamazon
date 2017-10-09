@@ -18,20 +18,22 @@ function bamazon() {
 
 
     var q = 'SELECT item_id, product_name, price FROM products';
-    connection.query(q, function (err, res, fields) {
-        //console.log(err);
-
-        for (var i = 0; i < res.length; i++) {
-            console.log(
-                "Item No: " +
-                res[i].item_id +
-                " || Product: " +
-                res[i].product_name +
-                " || Price: $" +
-                res[i].price
-            );
+    connection.query(q, function (err, itemRows) {
+        if (err) {
+            console.log(err);
+        } else {
+            for (var i = 0; i < itemRows.length; i++) {
+                console.log(
+                    "Item No: " +
+                    itemRows[i].item_id +
+                    " || Product: " +
+                    itemRows[i].product_name +
+                    " || Price: $" +
+                    itemRows[i].price
+                );
+            }
+            buyItemNo();
         }
-        buyItemNo();
     });
 
 
@@ -53,13 +55,16 @@ function bamazon() {
                 //console.log(answer.item);
                 var q = 'SELECT item_id, product_name, price FROM products where item_id = ?';
                 connection.query(q, (answer.item), function (err, res) {
-                    //console.log(err);
-                    console.log(`You chose ${res[0].product_name} for $${res[0].price} each.`);
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log(`You chose ${res[0].product_name} for $${res[0].price} each.`);
 
-                    product = res[0].product_name;
-                    pricing = res[0].price
+                        product = res[0].product_name;
+                        pricing = res[0].price
 
-                    buyQty();
+                        buyQty();
+                    }
                 });
             });
     }
@@ -81,34 +86,42 @@ function bamazon() {
     function checkInv() {
         var q = 'SELECT stock_quantity FROM products where item_id = ?';
         connection.query(q, item, function (err, res) {
-            //console.log(err);
-            console.log(`There are ${res[0].stock_quantity} in stock.`);
-
-            if (res[0].stock_quantity >= qty) {
-                checkout();
+            if (err) {
+                console.log(err);
             } else {
-                console.log('Insufficient quantity! (Enter new qty.)');
-                buyQty();
-            }
+                console.log(`There are ${res[0].stock_quantity} in stock.`);
 
+                if (res[0].stock_quantity >= qty) {
+                    checkout();
+                } else {
+                    console.log('Insufficient quantity! (Enter new qty.)');
+                    buyQty();
+                }
+            }
         });
     }
 
     function checkout() {
         var q = 'UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?';
         connection.query(q, [qty, item], function (err, res) {
-            //console.log(err);
-            var total = pricing * qty;
-            console.log(`You had purchased QTY ${qty} of ${product} for $${total}.`);
+            if (err) {
+                console.log(err);
+            } else {
+                var total = pricing * qty;
+                console.log(`You had purchased QTY ${qty} of ${product} for $${total}.`);
+            }
         });
 
         var q = 'SELECT stock_quantity FROM products where item_id = ?';
         connection.query(q, item, function (err, res) {
-            //console.log(err);
-            console.log(`There are ${res[0].stock_quantity} of ${product} remaining in stock.`);
-
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(`There are ${res[0].stock_quantity} of ${product} remaining in stock.`);
+                connection.end();
+            }
         });
-        connection.end();
+        
     }
 
 }
